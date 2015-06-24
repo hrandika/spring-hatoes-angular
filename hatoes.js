@@ -1,16 +1,16 @@
 angular.module('spring.hatoes', []).factory('hatoes', ['$http', '$log', 'ngToast', function($http, $log, ngToast) {
 
-    var urlBase = '/api/';
+    
     var rest = {};
 
     // Find All
-    rest.findAll = function(url, para) {
-        return $http.get(urlBase + url, {
+    rest.findAll = function(url,objectType, para) {
+        return $http.get(url, {
             params: para
         }).then(function(received) {
             var data = null;
             if (received.data._embedded) {
-                data = received.data._embedded[url];
+                data = received.data._embedded[objectType];
             }
             return {
                 links: angular.toJson(received.data._links),
@@ -35,7 +35,7 @@ angular.module('spring.hatoes', []).factory('hatoes', ['$http', '$log', 'ngToast
     };
 
     rest.findOne = function(url, id, para) {
-        return $http.get(urlBase + url + "/" + id, {
+        return $http.get(url + "/" + id, {
             params: para
         }).then(function(received) {
             return received.data;
@@ -44,7 +44,7 @@ angular.module('spring.hatoes', []).factory('hatoes', ['$http', '$log', 'ngToast
 
     // Save
     rest.save = function(url, data) {
-        return $http.post(urlBase + url, data).then(function(received) {
+        return $http.post(url, data).then(function(received) {
             var myToastMsg = ngToast.success({
                 content: 'Successfully added.',
                 timeout: 5000,
@@ -60,7 +60,7 @@ angular.module('spring.hatoes', []).factory('hatoes', ['$http', '$log', 'ngToast
     };
 
     rest.saveWithList = function(url, data, listType, list) {
-        return $http.post(urlBase + url, data).then(function(received) {
+        return $http.post(url, data).then(function(received) {
             var paraStart = received.data._links.self.href.indexOf("{?");
             var url = null;
             if (paraStart > 0) {
