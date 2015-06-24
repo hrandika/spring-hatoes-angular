@@ -1,0 +1,19 @@
+{
+  "name": "spring-hatoes-angular",
+  "version": "0.0.0",
+  "homepage": "https://github.com/hrandika/spring-hatoes-angular",
+  "authors": [
+    "hrandika@hotmail.com"
+  ],
+  "license": "Apache 2.0",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "ngtoast": "~1.5.4"
+  }
+}
