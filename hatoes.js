@@ -10,6 +10,12 @@ angular.module('spring.hatoes', []).factory('hatoes', ['$http', '$log', 'ngToast
                 var page = null;
                 if (received.data._embedded) {
                     data = received.data._embedded[objectType];
+                } else {
+                    if (received.data instanceof Array) {
+                        data = received.data;
+                    } else {
+                        var data = [];
+                    }
                 }
                 if (received.data.page) {
                     page = received.data.page;
@@ -17,16 +23,23 @@ angular.module('spring.hatoes', []).factory('hatoes', ['$http', '$log', 'ngToast
                 return {
                     links: angular.toJson(received.data._links),
                     data: data,
-                    page :page
+                    page: page
                 };
             });
         };
-        rest.findAllIn = function(object, objectType, para) {
-            return $http.get(object._links.self.href + '/' + objectType, {
+        rest.findAllIn = function(obj, objectType, objectName, para) {
+            var paraStart = obj._links.self.href.indexOf("{?");
+            var url = null;
+            if (paraStart > 0) {
+                url = obj._links.self.href.substring(0, paraStart);
+            } else {
+                url = obj._links.self.href;
+            }
+            return $http.get(url + '/' + objectType, {
                 params: para
             }).then(function(received) {
                 if (received.data._embedded) {
-                    return received.data._embedded[objectType];
+                    return received.data._embedded[objectName];
                 } else {
                     var myToastMsg = ngToast.danger({
                         content: objectType + " list is empty !",
@@ -87,11 +100,19 @@ angular.module('spring.hatoes', []).factory('hatoes', ['$http', '$log', 'ngToast
             });
         };
         rest.patch = function(obj) {
-            return $http.patch(obj._links.self.href, obj).then(function(received) {
+            var paraStart = obj._links.self.href.indexOf("{?");
+            var url = null;
+            if (paraStart > 0) {
+                url = obj._links.self.href.substring(0, paraStart);
+            } else {
+                url = obj._links.self.href;
+            }
+            return $http.patch(url, obj).then(function(received) {
                 var myToastMsg = ngToast.info({
                     content: 'Successfully updated.',
                     timeout: 5000,
                 });
+                $log.info(received);
                 return received;
             });
         };
@@ -139,6 +160,56 @@ angular.module('spring.hatoes', []).factory('hatoes', ['$http', '$log', 'ngToast
                     timeout: 3000,
                 });
                 return received;
+            });
+        };
+        // Search a Single Object by Given Parameters
+        rest.seachForOne = function(url, para, objectType) {
+            return $http.get(url, {
+                params: para
+            }).then(function(received) {                
+                if (received.data._embedded) {
+                    return received.data._embedded[objectType][0]
+                }
+            });
+        };
+        rest.searchOne = function(url, para, dataType, returnDatatype, position) {
+            return $http.get(url, {
+                params: para
+            }).then(function(received) {
+                var itemUrl = null;
+                if (received.data._embedded) {
+                    var dataList = received.data._embedded[dataType];
+                    if (dataList[position]) {
+                        itemUrl = dataList[position]._links.self.href;
+                    } else {}
+                } else {
+                    if (received.data instanceof Array) {
+                        data = received.data;
+                    } else {
+                        var data = [];
+                    }
+                }
+                return $http.get(itemUrl + "/" + returnDatatype).then(function(received2) {
+                    var data = null;
+                    var page = null;
+                    if (received2.data._embedded) {
+                        data = received2.data._embedded[returnDatatype];
+                    } else {
+                        if (received2.data instanceof Array) {
+                            data = received2.data;
+                        } else {
+                            var data = [];
+                        }
+                    }
+                    if (received2.data.page) {
+                        page = received2.data.page;
+                    }
+                    return {
+                        links: angular.toJson(received2.data._links),
+                        data: data,
+                        page: page
+                    };
+                });
             });
         };
         return rest;
