@@ -1,5 +1,5 @@
-angular.module('spring.hatoes', []).factory('hatoes', ['$http', '$log', '$q', 'ngToast',
-    function($http, $log, $q, ngToast) {
+angular.module('spring.hatoes', []).factory('hatoes', ['$http', '$log', 'ngToast',
+    function($http, $log, ngToast) {
         var rest = {};
         //
         // Find All
@@ -73,28 +73,6 @@ angular.module('spring.hatoes', []).factory('hatoes', ['$http', '$log', '$q', 'n
                 });
                 return error;
             });
-        };
-        //
-        // Save List
-        //
-        rest.saveList = function(url, dataList) {
-            var deferred = $q.defer();
-            var returnList = [];
-            var count = 0;
-            for (var i = 0; i < dataList.length; i++) {
-                $http.post(url, dataList[i]).success(function(tickerExpired) {
-                    returnList.push(tickerExpired._links.self.href);
-                    count++;
-                    if (count === dataList.length) {
-                        var myToastMsg = ngToast.success({
-                            content: 'Successfully added.',
-                            timeout: 5000,
-                        });
-                        deferred.resolve(returnList);
-                    }
-                });
-            } // End for
-            return deferred.promise;
         };
         //
         //  Save with List
