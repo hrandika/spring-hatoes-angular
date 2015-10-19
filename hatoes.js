@@ -1,13 +1,13 @@
 angular.module('spring.hatoes', []).factory('hatoes', ['$http', '$log', '$q', 'ngToast',
-    function($http, $log, $q, ngToast) {
+    function ($http, $log, $q, ngToast) {
         var rest = {};
         //
         // Find All
         //
-        rest.findAll = function(url, objectType, para) {
+        rest.findAll = function (url, objectType, para) {
             return $http.get(url, {
                 params: para
-            }).then(function(received) {
+            }).then(function (received) {
                 var data = null;
                 var page = null;
                 if (received.data._embedded) {
@@ -32,10 +32,10 @@ angular.module('spring.hatoes', []).factory('hatoes', ['$http', '$log', '$q', 'n
         //
         // Find All in
         //
-        rest.findAllIn = function(object, objectType, objectName, para) {
+        rest.findAllIn = function (object, objectType, objectName, para) {
             return $http.get(removeParams(object) + '/' + objectType, {
                 params: para
-            }).then(function(received) {
+            }).then(function (received) {
                 if (received.data._embedded) {
                     return received.data._embedded[objectName];
                 } else {
@@ -49,24 +49,24 @@ angular.module('spring.hatoes', []).factory('hatoes', ['$http', '$log', '$q', 'n
         //
         // Find One
         //
-        rest.findOne = function(url, id, para) {
+        rest.findOne = function (url, id, para) {
             return $http.get(url + "/" + id, {
                 params: para
-            }).then(function(received) {
+            }).then(function (received) {
                 return received.data;
             });
         };
         //
         // Save
         //
-        rest.save = function(url, data) {
-            return $http.post(url, data).then(function(received) {
+        rest.save = function (url, data) {
+            return $http.post(url, data).then(function (received) {
                 var myToastMsg = ngToast.success({
                     content: 'Successfully added.',
                     timeout: 5000,
                 });
                 return received;
-            }, function(error) {
+            }, function (error) {
                 var myToastMsg = ngToast.danger({
                     content: error.statusText,
                     timeout: 5000,
@@ -77,12 +77,12 @@ angular.module('spring.hatoes', []).factory('hatoes', ['$http', '$log', '$q', 'n
         //
         // Save List
         //
-        rest.saveList = function(url, dataList) {
+        rest.saveList = function (url, dataList) {
             var deferred = $q.defer();
             var returnList = [];
             var count = 0;
             for (var i = 0; i < dataList.length; i++) {
-                $http.post(url, dataList[i]).success(function(tickerExpired) {
+                $http.post(url, dataList[i]).success(function (tickerExpired) {
                     returnList.push(tickerExpired._links.self.href);
                     count++;
                     if (count === dataList.length) {
@@ -99,20 +99,20 @@ angular.module('spring.hatoes', []).factory('hatoes', ['$http', '$log', '$q', 'n
         //
         //  Save with List
         //
-        rest.saveWithList = function(url, data, listType, list) {
-            return $http.post(url, data).then(function(received) {
+        rest.saveWithList = function (url, data, listType, list) {
+            return $http.post(url, data).then(function (received) {
                 $http.patch(removeParams(received) + "/" + listType, list.join('\n'), {
                     headers: {
                         'Content-type': 'text/uri-list'
                     }
-                }).then(function(received2) {
+                }).then(function (received2) {
                     var myToastMsg = ngToast.success({
                         content: 'Successfully Saved.',
                         timeout: 5000,
                     });
                     return received2;
                 });
-            }, function(error) {
+            }, function (error) {
                 var myToastMsg = ngToast.danger({
                     content: error.statusText,
                     timeout: 5000,
@@ -123,8 +123,8 @@ angular.module('spring.hatoes', []).factory('hatoes', ['$http', '$log', '$q', 'n
         //
         // Patch
         //
-        rest.patch = function(object) {
-            return $http.patch(removeParams(object), object).then(function(received) {
+        rest.patch = function (object) {
+            return $http.patch(removeParams(object), object).then(function (received) {
                 var myToastMsg = ngToast.info({
                     content: 'Successfully updated.',
                     timeout: 5000,
@@ -136,12 +136,28 @@ angular.module('spring.hatoes', []).factory('hatoes', ['$http', '$log', '$q', 'n
         //
         // Patch with list
         //
-        rest.patchWithList = function(object, dataType, list) {
+        rest.patchWithList = function (object, dataType, list) {
             return $http.patch(removeParams(object) + '/' + dataType, list.join('\n'), {
                 headers: {
                     'Content-type': 'text/uri-list'
                 }
-            }).then(function(received2) {
+            }).then(function (received2) {
+                var myToastMsg = ngToast.info({
+                    content: 'Successfully updated.',
+                    timeout: 5000,
+                });
+                return received2;
+            });
+        };
+        //
+        //
+        //
+        rest.putWithList = function (object, dataType, list) {
+            return $http.put(removeParams(object) + '/' + dataType, list.join('\n'), {
+                headers: {
+                    'Content-type': 'text/uri-list'
+                }
+            }).then(function (received2) {
                 var myToastMsg = ngToast.info({
                     content: 'Successfully updated.',
                     timeout: 5000,
@@ -152,8 +168,8 @@ angular.module('spring.hatoes', []).factory('hatoes', ['$http', '$log', '$q', 'n
         //
         // Delete
         //
-        rest.delete = function(object) {
-            return $http.delete(removeParams(object)).then(function(received) {
+        rest.delete = function (object) {
+            return $http.delete(removeParams(object)).then(function (received) {
                 var myToastMsg = ngToast.danger({
                     content: 'Deleted.',
                     timeout: 3000,
@@ -161,12 +177,15 @@ angular.module('spring.hatoes', []).factory('hatoes', ['$http', '$log', '$q', 'n
                 return received;
             });
         };
+        rest.deleteFromObjectURL = function (object, dataType, removingObjectURL) {
+            return this.deleteFromObject(object, dataType, getIdFromURL(removingObjectURL));
+        };
         //
         // Delete From Object
         //
-        rest.deleteFromObject = function(object, dataType, id) {
+        rest.deleteFromObject = function (object, dataType, id) {
             var url = removeParams(object) + '/' + dataType + '/' + id;
-            return $http.delete(url).then(function(received) {
+            return $http.delete(url).then(function (received) {
                 var myToastMsg = ngToast.danger({
                     content: 'Removed.',
                     timeout: 3000,
@@ -174,13 +193,14 @@ angular.module('spring.hatoes', []).factory('hatoes', ['$http', '$log', '$q', 'n
                 return received;
             });
         };
+        
         //
         // Search a Single Object by Given Parameters
         //
-        rest.seachForOne = function(url, para, objectType) {
+        rest.seachForOne = function (url, para, objectType) {
             return $http.get(url, {
                 params: para
-            }).then(function(received) {
+            }).then(function (received) {
                 if (received.data._embedded) {
                     return received.data._embedded[objectType][0]
                 }
@@ -189,16 +209,16 @@ angular.module('spring.hatoes', []).factory('hatoes', ['$http', '$log', '$q', 'n
         //
         // Search One
         //
-        rest.searchOne = function(url, para, dataType, returnDatatype, position) {
+        rest.searchOne = function (url, para, dataType, returnDatatype, position) {
             return $http.get(url, {
                 params: para
-            }).then(function(received) {
+            }).then(function (received) {
                 var itemUrl = null;
                 if (received.data._embedded) {
                     var dataList = received.data._embedded[dataType];
                     if (dataList[position]) {
                         itemUrl = dataList[position]._links.self.href;
-                    } else {}
+                    } else { }
                 } else {
                     if (received.data instanceof Array) {
                         data = received.data;
@@ -206,7 +226,7 @@ angular.module('spring.hatoes', []).factory('hatoes', ['$http', '$log', '$q', 'n
                         var data = [];
                     }
                 }
-                return $http.get(itemUrl + "/" + returnDatatype).then(function(received2) {
+                return $http.get(itemUrl + "/" + returnDatatype).then(function (received2) {
                     var data = null;
                     var page = null;
                     if (received2.data._embedded) {
@@ -232,7 +252,7 @@ angular.module('spring.hatoes', []).factory('hatoes', ['$http', '$log', '$q', 'n
         //
         // Utils
         //
-        var removeParams = function(object) {
+        var removeParams = function (object) {
             var paraStart = object._links.self.href.indexOf("{?");
             var url = null;
             if (paraStart > 0) {
@@ -241,6 +261,11 @@ angular.module('spring.hatoes', []).factory('hatoes', ['$http', '$log', '$q', 'n
                 url = object._links.self.href;
             }
             return url;
+        };
+        var getIdFromURL = function (url) {
+            var paraStart = url.lastIndexOf("/");
+            return url.substring(paraStart + 1);
+
         };
         // Return Object 
         return rest;
